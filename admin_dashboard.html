@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h2>
+            <p class="text-muted">Welcome back, {{ session.full_name }}!</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body text-center">
+                    <h4>{{ total_spots or 0 }}</h4>
+                    <p class="mb-0">Total Spots</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body text-center">
+                    <h4>{{ available_spots or 0 }}</h4>
+                    <p class="mb-0">Available</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body text-center">
+                    <h4>{{ occupied_spots or 0 }}</h4>
+                    <p class="mb-0">Occupied</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body text-center">
+                    <h4>₹{{ "%.0f"|format(total_revenue or 0) }}</h4>
+                    <p class="mb-0">Total Revenue</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row">
+        <!-- Revenue Chart -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie"></i> Revenue by Parking Lot</h5>
+                </div>
+                <div class="card-body">
+                    {% if revenue_data and total_revenue > 0 %}
+                        <!-- CSS Pie Chart -->
+                        <div class="text-center mb-3">
+                            <div class="pie-chart mx-auto" style="
+                                width: 200px; 
+                                height: 200px; 
+                                border-radius: 50%; 
+                                background: conic-gradient(
+                                    {% set cumulative = 0 %}
+                                    {% for lot in revenue_data %}
+                                        {% set color_hue = loop.index0 * 60 %}
+                                        hsl({{ color_hue }}, 70%, 60%) {{ cumulative }}% {{ cumulative + lot.percentage }}%{{ ',' if not loop.last }}
+                                        {% set cumulative = cumulative + lot.percentage %}
+                                    {% endfor %}
+                                );
+                                position: relative;
+                            ">
+                                <div style="
+                                    position: absolute;
+                                    top: 50%;
+                                    left: 50%;
+                                    transform: translate(-50%, -50%);
+                                    background: white;
+                                    width: 80px;
+                                    height: 80px;
+                                    border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-weight: bold;
+                                    font-size: 12px;
+                                ">
+                                    ₹{{ "%.0f"|format(total_revenue) }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Legend -->
+                        <div class="chart-legend">
+                            {% for lot in revenue_data %}
+                            <div class="d-flex align-items-center mb-2">
+                                <div style="
+                                    width: 20px; 
+                                    height: 20px; 
+                                    background: hsl({{ loop.index0 * 60 }}, 70%, 60%);
+                                    margin-right: 10px;
+                                    border-radius: 3px;
+                                "></div>
+                                <small>
+                                    <strong>{{ lot.name }}</strong><br>
+                                    ₹{{ "%.0f"|format(lot.revenue) }} ({{ "%.1f"|format(lot.percentage) }}%)
+                                </small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-chart-pie fa-3x mb-3"></i>
+                            <p>No revenue data available yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Occupancy Chart -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-bar"></i> Parking Spot Occupancy</h5>
+                </div>
+                <div class="card-body">
+                    {% if total_spots > 0 %}
+                        <!-- CSS Donut Chart -->
+                        {% set occupied_percentage = (occupied_spots / total_spots * 100) %}
+                        {% set available_percentage = (available_spots / total_spots * 100) %}
+                        
+                        <div class="text-center mb-3">
+                            <div class="pie-chart mx-auto" style="
+                                width: 200px; 
+                                height: 200px; 
+                                border-radius: 50%; 
+                                background: conic-gradient(
+                                    #dc3545 0% {{ occupied_percentage }}%,
+                                    #28a745 {{ occupied_percentage }}% 100%
+                                );
+                                position: relative;
+                            ">
+                                <div style="
+                                    position: absolute;
+                                    top: 50%;
+                                    left: 50%;
+                                    transform: translate(-50%, -50%);
+                                    background: white;
+                                    width: 80px;
+                                    height: 80px;
+                                    border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-weight: bold;
+                                    font-size: 14px;
+                                ">
+                                    {{ "%.0f"|format(occupied_percentage) }}%
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Occupancy Legend -->
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <div style="width: 20px; height: 20px; background: #dc3545; margin-right: 8px; border-radius: 3px;"></div>
+                                    <span>Occupied</span>
+                                </div>
+                                <h5>{{ occupied_spots }}</h5>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <div style="width: 20px; height: 20px; background: #28a745; margin-right: 8px; border-radius: 3px;"></div>
+                                    <span>Available</span>
+                                </div>
+                                <h5>{{ available_spots }}</h5>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-car fa-3x mb-3"></i>
+                            <p>No parking spots available.</p>
+                            <a href="{{ url_for('add_lot') }}" class="btn btn-primary">Add First Lot</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Spot {{ spot.spot_number }} Details{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h3>Spot {{ spot.spot_number }} — {{ spot.lot_name }}</h3>
+  <p>Status: 
+    <span class="badge {% if spot.status=='occupied' %}bg-danger{% else %}bg-success{% endif %}">
+      {{ spot.status|title }}
+    </span>
+  </p>
+  {% if spot.status == 'occupied' %}
+    <a href="{{ url_for('occupied_details', spot_id=spot.id) }}" class="btn btn-info">
+      <i class="fas fa-info-circle"></i> View Occupation Details
+    </a>
+  {% endif %}
+  <a href="{{ url_for('spots_overview') }}" class="btn btn-secondary">Back</a>
+</div>
+{% endblock %}

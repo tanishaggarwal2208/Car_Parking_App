@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Parking Spots Overview{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4"><i class="fas fa-car"></i> Parking Spots Overview</h2>
+  <div class="row g-4">
+    {% for item in overview %}
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="card-header">
+            <strong>{{ item.lot.name }}</strong>
+          </div>
+          <div class="card-body">
+            <div class="d-flex flex-wrap gap-2">
+              {% for spot in item.spots %}
+                <a href="{{ url_for('view_delete_spot', lot_id=item.lot.id, spot_id=spot.id) }}"
+                   class="badge {% if spot.status=='occupied' %}bg-danger{% else %}bg-success{% endif %}"
+                   style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+                          font-weight:bold;text-decoration:none;"
+                   title="Spot {{ spot.spot_number }} – {{ spot.status|title }}">
+                  {{ 'O' if spot.status=='occupied' else 'A' }}
+                </a>
+              {% endfor %}
+            </div>
+            <div class="mt-3">
+              <small class="text-muted">
+                <i class="fas fa-map-marker-alt"></i> {{ item.lot.address }}<br>
+                <i class="fas fa-thumbtack"></i> Pin: {{ item.lot.pin_code }}<br>
+                <i class="fas fa-rupee-sign"></i> ₹{{ item.lot.price_per_hour }}/hour<br>
+                <i class="fas fa-car"></i> {{ item.spots|length }} total spots
+              </small>
+            </div>
+            <div class="mt-3">
+              {% set occupied_count = item.spots|selectattr('status', 'equalto', 'occupied')|list|length %}
+              {% set available_count = item.spots|length - occupied_count %}
+              {% set occupancy_rate = (occupied_count / item.spots|length * 100) if item.spots|length > 0 else 0 %}
+              <div class="progress mb-2" style="height: 20px;">
+                <div class="progress-bar 
+                    {% if occupancy_rate >= 80 %}bg-danger
+                    {% elif occupancy_rate >= 50 %}bg-warning
+                    {% else %}bg-success
+                    {% endif %}" 
+                    role="progressbar" 
+                    style="width: {{ occupancy_rate }}%">
+                    {{ "%.0f"|format(occupancy_rate) }}%
+                </div>
+              </div>
+              <small class="text-muted">
+                {{ occupied_count }} occupied, {{ available_count }} available
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

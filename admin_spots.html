@@ -1,0 +1,78 @@
+
+{% extends "base.html" %}
+
+{% block title %}Parking Spots - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-square"></i> Parking Spots</h2>
+</div>
+
+{% if spots %}
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Lot</th>
+                        <th>Spot #</th>
+                        <th>Status</th>
+                        <th>User</th>
+                        <th>Check-in Time</th>
+                        <th>Current Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for spot in spots %}
+                    <tr>
+                        <td>{{ spot.lot_name }}</td>
+                        <td>
+                            <span class="badge bg-secondary">Spot #{{ spot.spot_number }}</span>
+                        </td>
+                        <td>
+                            {% if spot.status == 'available' %}
+                                <span class="badge bg-success">Available</span>
+                            {% else %}
+                                <span class="badge bg-danger">Occupied</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if spot.user_name %}
+                                {{ spot.user_name }} ({{ spot.username }})
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if spot.check_in_time %}
+                                {{ spot.check_in_time.strftime('%Y-%m-%d %H:%M') if spot.check_in_time else 'N/A' }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if spot.total_cost %}
+                                ${{ "%.2f"|format(spot.total_cost) }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-square fa-4x text-muted mb-4"></i>
+    <h4 class="text-muted">No Parking Spots Found</h4>
+    <p class="text-muted">Create parking lots to see spots here.</p>
+    <a href="{{ url_for('add_lot') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Parking Lot
+    </a>
+</div>
+{% endif %}
+{% endblock %}

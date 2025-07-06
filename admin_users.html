@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Users - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-users"></i> Registered Users</h2>
+</div>
+
+{% if users %}
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Address</th>
+                        <th>Pin Code</th>
+                        <th>Registered On</th>
+                        {# Remove or add columns below as needed #}
+                        {# <th>Total Reservations</th>
+                        <th>Total Spent</th> #}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.full_name }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.address }}</td>
+                        <td>{{ user.pin_code }}</td>
+                        <td>
+                            {{ user.created_at[:10] if user.created_at else 'N/A' }}
+                        </td>
+                        {# Uncomment if you have these fields in your SELECT:
+                        <td>
+                            <span class="badge bg-primary">{{ user.total_reservations or 0 }}</span>
+                        </td>
+                        <td>
+                            {% if user.total_spent %}
+                                ${{ "%.2f"|format(user.total_spent) }}
+                            {% else %}
+                                $0.00
+                            {% endif %}
+                        </td>
+                        #}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-users fa-4x text-muted mb-4"></i>
+    <h4 class="text-muted">No Users Found</h4>
+    <p class="text-muted">No users have registered yet.</p>
+</div>
+{% endif %}
+{% endblock %}

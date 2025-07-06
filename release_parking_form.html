@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Release Parking Spot - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white text-center">
+                    <h4><i class="fas fa-sign-out-alt"></i> Release Parking Spot</h4>
+                </div>
+                <div class="card-body">
+                    {% if reservation %}
+                    <form method="POST" action="{{ url_for('release_spot', reservation_id=reservation.id) }}">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6>Parking Details</h6>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Spot ID:</strong></td>
+                                        <td>{{ reservation.spot_id }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Parking Lot:</strong></td>
+                                        <td>{{ reservation.lot_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Spot Number:</strong></td>
+                                        <td>#{{ reservation.spot_number }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Vehicle Number:</strong></td>
+                                        <td>{{ reservation.vehicle_number or 'Not specified' }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Time & Cost Details</h6>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Check-in Time:</strong></td>
+                                        <td>{{ reservation.check_in_time[:19] if reservation.check_in_time else 'N/A' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Duration:</strong></td>
+                                        <td>{{ duration_hours }} hours</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Rate per Hour:</strong></td>
+                                        <td>₹{{ reservation.price_per_hour }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total Cost:</strong></td>
+                                        <td class="text-success"><strong>₹{{ "%.2f"|format(estimated_cost) }}</strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Confirm Release:</strong> You are about to release your parking spot. 
+                            The total cost will be ₹{{ "%.2f"|format(estimated_cost) }} for {{ duration_hours }} hours of parking.
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <button type="submit" class="btn btn-danger btn-lg me-md-2">
+                                <i class="fas fa-sign-out-alt"></i> Confirm Release
+                            </button>
+                            <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-danger">
+                        <h5>Reservation Not Found</h5>
+                        <p>The parking reservation could not be found or has already been released.</p>
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Back to Dashboard
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

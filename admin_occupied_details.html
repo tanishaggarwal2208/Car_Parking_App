@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Occupation Details{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h3>Reservation #{{ d.reservation_id }}</h3>
+  <table class="table">
+    <tr><th>Spot ID</th><td>{{ d.spot_id }}</td></tr>
+    <tr><th>Customer ID</th><td>{{ d.user_id }}</td></tr>
+    <tr><th>Customer Name</th><td>{{ d.full_name }}</td></tr>
+    <tr><th>Vehicle Number</th><td>{{ d.vehicle_number }}</td></tr>
+    <tr><th>Check-In Time</th><td>{{ d.check_in_time[:19] }}</td></tr>
+    <tr><th>Estimated Cost</th><td>₹{{ "%.2f"|format(d.total_cost) }}</td></tr>
+  </table>
+  <a href="{{ url_for('view_delete_spot', lot_id=0, spot_id=d.spot_id) }}" class="btn btn-secondary">
+    Close
+  </a>
+</div>
+{% endblock %}

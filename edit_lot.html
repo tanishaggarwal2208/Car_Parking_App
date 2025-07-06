@@ -1,0 +1,59 @@
+
+{% extends "base.html" %}
+
+{% block title %}Edit Parking Lot - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-edit"></i> Edit Parking Lot</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Lot Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ lot.name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address *</label>
+                        <textarea class="form-control" id="address" name="address" rows="3" required>{{ lot.address }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="pin_code" class="form-label">PIN Code *</label>
+                        <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{ lot.pin_code }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="price_per_hour" class="form-label">Price per Hour ($) *</label>
+                        <input type="number" class="form-control" id="price_per_hour" name="price_per_hour" 
+                               step="0.01" min="0" value="{{ lot.price_per_hour }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="max_spots" class="form-label">Maximum Parking Spots *</label>
+                        <input type="number" class="form-control" id="max_spots" name="max_spots" 
+                               min="1" max="1000" value="{{ lot.max_spots }}" required>
+                        <div class="form-text">
+                            Current: {{ lot.max_spots }} spots. 
+                            Increasing will add new spots, decreasing will remove empty spots only.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('admin_lots') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Lot
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

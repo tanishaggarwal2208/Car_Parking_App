@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user"></i> My Dashboard</h2>
+        <div class="text-muted">Welcome, {{ session.full_name }}</div>
+    </div>
+
+    <!-- Active Reservation Section -->
+    {% if active_reservation %}
+    <div class="row mb-4" id="dashboard">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-car"></i> Currently Parking</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="text-primary">{{ active_reservation.lot_name }}</h6>
+                            <p class="mb-1"><i class="fas fa-map-marker-alt"></i> {{ active_reservation.address }}</p>
+                            <p class="mb-1"><i class="fas fa-square"></i> Spot #{{ active_reservation.spot_number }}</p>
+                            <p class="mb-1"><i class="fas fa-clock"></i> Checked in: {{ active_reservation.check_in_time[:19] if active_reservation.check_in_time else 'N/A' }}</p>
+                            <p class="mb-0"><i class="fas fa-rupee-sign"></i> Rate: ₹{{ active_reservation.price_per_hour }}/hour</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ url_for('release_parking_form', reservation_id=active_reservation.id) }}" 
+                               class="btn btn-danger">
+                                <i class="fas fa-sign-out-alt"></i> Release Parking
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Available Parking Lots Section -->
+    {% if not active_reservation %}
+    <div class="row mb-4" id="available-lots">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-parking"></i> Available Parking Lots</h5>
+                </div>
+                <div class="card-body">
+                    {% if available_lots %}
+                    <div class="row g-3">
+                        {% for lot in available_lots %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ lot.name }}</h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            <i class="fas fa-map-marker-alt"></i> {{ lot.address }}<br>
+                                            <i class="fas fa-envelope"></i> {{ lot.pin_code }}<br>
+                                            <i class="fas fa-rupee-sign"></i> ₹{{ lot.price_per_hour }}/hour
+                                        </small>
+                                    </p>
+
+                                    <div class="row text-center mb-3">
+                                        <div class="col-6">
+                                            <h6 class="text-success">{{ lot.available_spots }}</h6>
+                                            <small class="text-muted">Available</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <h6 class="text-primary">{{ lot.total_spots }}</h6>
+                                            <small class="text-muted">Total</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar bg-success" 
+                                             style="width: {{ (lot.available_spots / lot.total_spots * 100) if lot.total_spots > 0 else 0 }}%">
+                                        </div>
+                                    </div>
+
+                                    <a href="{{ url_for('book_spot', lot_id=lot.id) }}" 
+                                       class="btn btn-primary w-100"
+                                       onclick="return confirm('Book a parking spot in {{ lot.name }}?')">
+                                        <i class="fas fa-parking"></i> Book Spot
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-parking fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">No Available Parking Lots</h6>
+                        <p class="text-muted">All parking lots are currently full. Please check back later.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Parking Summary Chart -->
+    <div class="row mb-4" id="summary">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> My Parking Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% if parking_summary %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- CSS Pie Chart -->
+                                <div class="text-center mb-3">
+                                    <div class="pie-chart mx-auto" style="
+                                        width: 180px; 
+                                        height: 180px; 
+                                        border-radius: 50%; 
+                                        background: conic-gradient(
+                                            #28a745 0% {{ parking_summary.completed_percentage }}%,
+                                            #ffc107 {{ parking_summary.completed_percentage }}% {{ parking_summary.completed_percentage + parking_summary.active_percentage }}%,
+                                            #dc3545 {{ parking_summary.completed_percentage + parking_summary.active_percentage }}% 100%
+                                        );
+                                        position: relative;
+                                    ">
+                                        <div style="
+                                            position: absolute;
+                                            top: 50%;
+                                            left: 50%;
+                                            transform: translate(-50%, -50%);
+                                            background: white;
+                                            width: 70px;
+                                            height: 70px;
+                                            border-radius: 50%;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            font-weight: bold;
+                                            font-size: 12px;
+                                        ">
+                                            {{ parking_summary.total_bookings }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- Legend and Stats -->
+                                <div class="parking-stats">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div style="width: 20px; height: 20px; background: #28a745; margin-right: 10px; border-radius: 3px;"></div>
+                                        <span><strong>Completed:</strong> {{ parking_summary.completed_bookings }}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div style="width: 20px; height: 20px; background: #ffc107; margin-right: 10px; border-radius: 3px;"></div>
+                                        <span><strong>Active:</strong> {{ parking_summary.active_bookings }}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div style="width: 20px; height: 20px; background: #dc3545; margin-right: 10px; border-radius: 3px;"></div>
+                                        <span><strong>Cancelled:</strong> {{ parking_summary.cancelled_bookings }}</span>
+                                    </div>
+                                    <hr>
+                                    <div class="text-center">
+                                        <h6>Total Spent</h6>
+                                        <h4 class="text-success">₹{{ "%.2f"|format(parking_summary.total_spent) }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">No Parking Data</h6>
+                        <p class="text-muted">Start parking to see your summary here.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parking History Section -->
+    <div class="row" id="history">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Parking History</h5>
+                </div>
+                <div class="card-body">
+                    {% if all_reservations %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Parking Lot</th>
+                                    <th>Spot</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Duration</th>
+                                    <th>Cost</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in all_reservations %}
+                                <tr>
+                                    <td>{{ record.lot_name }}</td>
+                                    <td>Spot #{{ record.spot_number }}</td>
+                                    <td>{{ record.check_in_time[:16] if record.check_in_time else 'N/A' }}</td>
+                                    <td>{{ record.check_out_time[:16] if record.check_out_time else 'Ongoing' }}</td>
+                                    <td>
+                                        {% if record.status == 'completed' and record.total_cost and record.price_per_hour %}
+                                            {{ "%.1f"|format(record.total_cost / record.price_per_hour) }} hours
+                                        {% else %}
+                                            Ongoing
+                                        {% endif %}
+                                    </td>
+                                    <td>₹{{ "%.2f"|format(record.total_cost) if record.total_cost else '0.00' }}</td>
+                                    <td>
+                                        {% if record.status == 'active' %}
+                                            <span class="badge bg-warning">Currently Parking</span>
+                                        {% elif record.status == 'completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ record.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.status == 'active' %}
+                                            <a href="{{ url_for('release_parking_form', reservation_id=record.id) }}" 
+                                               class="btn btn-sm btn-danger">
+                                                <i class="fas fa-sign-out-alt"></i> Release
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">No Parking History</h6>
+                        <p class="text-muted">Your parking history will appear here after you use the system.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

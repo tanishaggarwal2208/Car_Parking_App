@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Vehicle Parking System{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #667eea !important;
+        }
+        .alert {
+            border-radius: 8px;
+        }
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .nav-pills .nav-link {
+            color: #6c757d;
+            margin: 0 5px;
+            border-radius: 8px;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .nav-pills .nav-link:hover {
+            background-color: #e9ecef;
+        }
+        .pie-chart {
+            transition: transform 0.3s ease;
+        }
+        .pie-chart:hover {
+            transform: scale(1.05);
+        }
+        /* Admin Navigation Styling */
+        .admin-nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .admin-nav .nav-pills .nav-link {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            margin: 0 8px;
+            font-weight: 500;
+        }
+        .admin-nav .nav-pills .nav-link.active {
+            background: rgba(255,255,255,0.9);
+            color: #667eea;
+        }
+        .admin-nav .nav-pills .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        /* Profile Button Styling */
+        .profile-btn {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-car"></i> Vehicle Parking System
+            </a>
+            <div class="navbar-nav ms-auto">
+                {% if session.user_id %}
+                    <span class="navbar-text me-3">Welcome, {{ session.full_name }}!</span>
+                    <!-- Small Profile Edit Button -->
+                    <a class="btn btn-outline-secondary btn-sm profile-btn" href="{{ url_for('view_profile') }}" title="View Profile">
+                        <i class="fas fa-user"></i> Profile
+                    </a>
+                    <a class="btn btn-outline-primary" href="{{ url_for('logout') }}">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                {% else %}
+                    <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Admin Navigation Tabs (Only show for admin users) -->
+        {% if session.user_id and session.role == 'admin' %}
+        <div class="admin-nav">
+            <ul class="nav nav-pills nav-fill">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}" 
+                       href="{{ url_for('admin_dashboard') }}">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint in ['admin_lots', 'add_lot', 'edit_lot'] %}active{% endif %}" 
+                       href="{{ url_for('admin_lots') }}">
+                        <i class="fas fa-parking"></i> Parking Lots
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'spots_overview' %}active{% endif %}" 
+                       href="{{ url_for('spots_overview') }}">
+                        <i class="fas fa-square"></i> Parking Spots
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'admin_users' %}active{% endif %}" 
+                       href="{{ url_for('admin_users') }}">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'search' %}active{% endif %}" 
+                       href="{{ url_for('search') }}">
+                        <i class="fas fa-search"></i> Search
+                    </a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- User Navigation Tabs (Only show for regular users) -->
+        {% if session.user_id and session.role == 'user' %}
+        <div class="admin-nav">
+            <ul class="nav nav-pills nav-fill">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'user_dashboard' %}active{% endif %}"
+                       href="{{ url_for('user_dashboard') }}#dashboard">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'user_dashboard' %}active{% endif %}"
+                       href="{{ url_for('user_dashboard') }}#available-lots">
+                        <i class="fas fa-car"></i> Book Parking
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'user_dashboard' %}active{% endif %}"
+                       href="{{ url_for('user_dashboard') }}#summary">
+                        <i class="fas fa-chart-pie"></i> Summary
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'user_dashboard' %}active{% endif %}"
+                       href="{{ url_for('user_dashboard') }}#history">
+                        <i class="fas fa-history"></i> History
+                    </a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Main Content -->
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
